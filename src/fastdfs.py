@@ -3,7 +3,7 @@
 # @Auther: Ray
 # @Time: 2019/11/5 10:40
 
-from prometheus_client import Gauge, generate_latest, CollectorRegistry
+from prometheus_client import Gauge, generate_latest, CollectorRegistry, Info
 from flask import Response, Flask
 import os
 import json
@@ -236,6 +236,18 @@ def set_tracker():
     for tracker in trackerServer['tracker']:
         fastdfs_tracker_server_info.labels(tracker=tracker['tracker']).set(tracker['status'])
 
+'''version2floatstr函数用于将版本号转换为float类型，方便计算版本差异'''
+def version2floatstr(version):
+    '''version2floatstr函数用于将版本号转换为float类型，方便计算版本差异'''
+    if version and isinstance(version, str) and version.count('.') >= 2:
+        versions = version.split('.')
+        v = versions[0] + '.'
+        for i in range(1, len(versions)):
+            v = v + versions[i]
+        return v
+    else:
+        return version
+
 
 def set_storage():
     for group in storageServer['group']:
@@ -252,7 +264,7 @@ def set_storage():
             ip = storage['id']
             fastdfs_storage_server_info.labels(group=group_name, storage=storage_name, ip=ip, version=version).set(
                 storage['ip_addr'])
-            fastdfs_storage_version.labels(group=group_name, storage=storage_name, ip=ip, version=version).set(version)
+            fastdfs_storage_version.labels(group=group_name, storage=storage_name, ip=ip, version=version).set(version2floatstr(version))
             fastdfs_join_time.labels(group=group_name, storage=storage_name, ip=ip, version=version).set(
                 storage['join time'])
             # 如果storage异常则up time为空
